@@ -43,14 +43,15 @@ print(df.head())
 
 # individual words considered as tokens
 tokenized_tweet = df['clean_tweet'].apply(lambda x: x.split())
-tokenized_tweet.head()
+print('individual words considered as tokens')
+print(tokenized_tweet.head())
 # stem the words
 from nltk.stem.porter import PorterStemmer
 
 stemmer = PorterStemmer()
 
 tokenized_tweet = tokenized_tweet.apply(lambda sentence: [stemmer.stem(word) for word in sentence])
-tokenized_tweet.head()
+print('stem words')
 print(tokenized_tweet.head())
 
 # combine words into single sentence
@@ -58,6 +59,7 @@ for i in range(len(tokenized_tweet)):
     tokenized_tweet[i] = " ".join(tokenized_tweet[i])
 
 df['clean_tweet'] = tokenized_tweet
+print('combine words into single sentence')
 print(df.head())
 
 all_words = " ".join([sentence for sentence in df['clean_tweet']])
