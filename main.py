@@ -217,10 +217,12 @@ J, theta = gradientDescent(X, Y, np.zeros((3, 1)), 1e-9, 1500)
 print(f"The cost after training is {J:.6f}.")
 print(f"The resulting vector of weights is {[round(t, 8) for t in np.squeeze(theta)]}")
 
+
 def neg(theta, pos):
     return (-theta[0] - pos * theta[1]) / theta[2]
 
-fig, ax = plt.subplots(figsize = (10, 8))
+
+fig, ax = plt.subplots(figsize=(10, 8))
 
 colors = ['red', 'green']
 
@@ -231,10 +233,10 @@ plt.xlabel("Positive")
 plt.ylabel("Negative")
 
 # Now lets represent the logistic regression model in this chart.
-maxpos = np.max(X[:,1])           # max value in x-axis
+maxpos = np.max(X[:, 1])  # max value in x-axis
 
 # Plot a gray line that divides the 2 areas.
-ax.plot([0,  maxpos], [neg(theta, 0),   neg(theta, maxpos)], color = 'gray')
+ax.plot([0, maxpos], [neg(theta, 0), neg(theta, maxpos)], color='gray')
 
 plt.show()
 
@@ -247,6 +249,7 @@ def predict_tweet(tweet, freqs, theta):
     y_pred = sigmoid(np.dot(x, theta))
 
     return y_pred
+
 
 # check your own sentiment
 my_tweet = 'I love machine learning :)'
@@ -280,11 +283,12 @@ def test_logistic_regression(test_x, test_y, freqs, theta):
 
     return accuracy
 
+
 test_accuracy = test_logistic_regression(test_x, test_y, freqs, theta)
 print(f"Logistic regression model's accuracy = {test_accuracy:.4f}")
 
 print('Label Predicted Tweet')
-for x,y in zip(test_x,test_y):
+for x, y in zip(test_x, test_y):
     y_hat = predict_tweet(x, freqs, theta)
 
     if np.abs(y - (y_hat > 0.5)) > 0:
