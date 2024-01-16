@@ -16,6 +16,7 @@ print(df.head())
 # datatype info
 print(df.info())
 
+
 # removes pattern in the input text
 def remove_pattern(input_txt, pattern):
     r = re.findall(pattern, input_txt)
