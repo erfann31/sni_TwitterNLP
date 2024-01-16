@@ -3,11 +3,91 @@ import string  # for string operations
 
 import nltk  # Python library for NLP
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from nltk.corpus import stopwords  # module for stop words that come with NLTK
 from nltk.corpus import twitter_samples
 from nltk.stem import PorterStemmer  # module for stemming
 from nltk.tokenize import TweetTokenizer
+
+def remove_pattern(input_txt, pattern):
+    r = re.findall(pattern, input_txt)
+    for word in r:
+        input_txt = re.sub(word, "", input_txt)
+    return input_txt
+
+df = pd.read_csv('Twitter Sentiments.csv')
+# remove twitter handles (@user)
+df['clean_tweet'] = np.vectorize(remove_pattern)(df['tweet'], "@[\w]*")
+print('remove twitter handles')
+print(df.head())
+
+# remove special characters, numbers and punctuations
+df['clean_tweet'] = df['clean_tweet'].str.replace("[^a-zA-Z#]", " ")
+print('remove special characters, numbers and punctuations')
+print(df.head())
+
+# remove short words
+df['clean_tweet'] = df['clean_tweet'].apply(lambda x: " ".join([w for w in x.split() if len(w) > 3]))
+print('remove short words')
+print(df.head())
+
+# individual words considered as tokens
+tokenized_tweet = df['clean_tweet'].apply(lambda x: x.split())
+print('individual words considered as tokens')
+print(tokenized_tweet.head())
+# stem the words
+from nltk.stem.porter import PorterStemmer
+
+stemmer = PorterStemmer()
+
+tokenized_tweet = tokenized_tweet.apply(lambda sentence: [stemmer.stem(word) for word in sentence])
+print('stem words')
+print(tokenized_tweet.head())
+
+# combine words into single sentence
+for i in range(len(tokenized_tweet)):
+    tokenized_tweet[i] = " ".join(tokenized_tweet[i])
+
+df['clean_tweet'] = tokenized_tweet
+print('combine words into single sentence')
+print(df.head())
+
+# visualize the frequent words
+all_words = " ".join([sentence for sentence in df['clean_tweet']])
+
+from wordcloud import WordCloud
+
+wordcloud = WordCloud(width=800, height=500, random_state=42, max_font_size=100).generate(all_words)
+
+# plot the graph
+plt.figure(figsize=(15, 8))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.show()
+
+# frequent words visualization for +ve
+all_words = " ".join([sentence for sentence in df['clean_tweet'][df['label'] == 0]])
+
+wordcloud = WordCloud(width=800, height=500, random_state=42, max_font_size=100).generate(all_words)
+
+# plot the graph
+plt.figure(figsize=(15, 8))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.show()
+
+# frequent words visualization for -ve
+all_words = " ".join([sentence for sentence in df['clean_tweet'][df['label'] == 1]])
+
+wordcloud = WordCloud(width=800, height=500, random_state=42, max_font_size=100).generate(all_words)
+
+# plot the graph
+plt.figure(figsize=(15, 8))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.show()
+
 
 nltk.download('twitter_samples')
 nltk.download('stopwords')
