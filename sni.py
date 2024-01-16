@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 warnings.filterwarnings('ignore')
 
 df = pd.read_csv('Twitter Sentiments.csv')
-print(df.head(10))
+print(df.head())
 
 
 # datatype info
