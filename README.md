@@ -1,1 +1,1 @@
-# sni_TwitterNLP
+# Social Network Twitter NLP
