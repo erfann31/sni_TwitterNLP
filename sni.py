@@ -12,10 +12,8 @@ warnings.filterwarnings('ignore')
 df = pd.read_csv('Twitter Sentiments.csv')
 print(df.head())
 
-
 # datatype info
 print(df.head())
-
 
 
 # removes pattern in the input text
@@ -35,7 +33,6 @@ df.head()
 # remove short words
 df['clean_tweet'] = df['clean_tweet'].apply(lambda x: " ".join([w for w in x.split() if len(w) > 3]))
 print(df.head())
-
 
 # individual words considered as tokens
 tokenized_tweet = df['clean_tweet'].apply(lambda x: x.split())
@@ -105,8 +102,6 @@ ht_positive = hashtag_extract(df['clean_tweet'][df['label'] == 0])
 ht_negative = hashtag_extract(df['clean_tweet'][df['label'] == 1])
 print(ht_positive[:5])
 
-
-
 # unnest list
 ht_positive = sum(ht_positive, [])
 ht_negative = sum(ht_negative, [])
@@ -118,7 +113,6 @@ d = pd.DataFrame({'Hashtag': list(freq.keys()),
                   'Count': list(freq.values())})
 print(df.head())
 
-
 # select top 10 hashtags
 d = d.nlargest(columns='Count', n=10)
 plt.figure(figsize=(15, 9))
@@ -129,7 +123,6 @@ freq = nltk.FreqDist(ht_negative)
 d = pd.DataFrame({'Hashtag': list(freq.keys()),
                   'Count': list(freq.values())})
 print(df.head())
-
 
 # select top 10 hashtags
 d = d.nlargest(columns='Count', n=10)
