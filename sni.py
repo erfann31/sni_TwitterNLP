@@ -27,12 +27,17 @@ def remove_pattern(input_txt, pattern):
 
 # remove twitter handles (@user)
 df['clean_tweet'] = np.vectorize(remove_pattern)(df['tweet'], "@[\w]*")
+print('remove twitter handles')
+print(df.head())
 
 # remove special characters, numbers and punctuations
 df['clean_tweet'] = df['clean_tweet'].str.replace("[^a-zA-Z#]", " ")
-df.head()
+print('remove special characters, numbers and punctuations')
+print(df.head())
+
 # remove short words
 df['clean_tweet'] = df['clean_tweet'].apply(lambda x: " ".join([w for w in x.split() if len(w) > 3]))
+print('remove short words')
 print(df.head())
 
 
