@@ -14,7 +14,7 @@ print(df.head())
 
 
 # datatype info
-print(df.head())
+print(df.info())
 
 
 
