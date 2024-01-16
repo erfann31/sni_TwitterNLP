@@ -62,6 +62,7 @@ df['clean_tweet'] = tokenized_tweet
 print('combine words into single sentence')
 print(df.head())
 
+# visualize the frequent words
 all_words = " ".join([sentence for sentence in df['clean_tweet']])
 
 from wordcloud import WordCloud
