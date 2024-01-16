@@ -12,7 +12,6 @@ warnings.filterwarnings('ignore')
 df = pd.read_csv('Twitter Sentiments.csv')
 print(df.head())
 
-
 # datatype info
 print(df.info())
 
@@ -39,7 +38,6 @@ print(df.head())
 df['clean_tweet'] = df['clean_tweet'].apply(lambda x: " ".join([w for w in x.split() if len(w) > 3]))
 print('remove short words')
 print(df.head())
-
 
 # individual words considered as tokens
 tokenized_tweet = df['clean_tweet'].apply(lambda x: x.split())
@@ -75,6 +73,7 @@ plt.imshow(wordcloud, interpolation='bilinear')
 plt.axis('off')
 plt.show()
 
+# frequent words visualization for +ve
 all_words = " ".join([sentence for sentence in df['clean_tweet'][df['label'] == 0]])
 
 wordcloud = WordCloud(width=800, height=500, random_state=42, max_font_size=100).generate(all_words)
@@ -85,6 +84,7 @@ plt.imshow(wordcloud, interpolation='bilinear')
 plt.axis('off')
 plt.show()
 
+# frequent words visualization for -ve
 all_words = " ".join([sentence for sentence in df['clean_tweet'][df['label'] == 1]])
 
 wordcloud = WordCloud(width=800, height=500, random_state=42, max_font_size=100).generate(all_words)
@@ -110,21 +110,22 @@ ht_positive = hashtag_extract(df['clean_tweet'][df['label'] == 0])
 
 # extract hashtags from racist/sexist tweets
 ht_negative = hashtag_extract(df['clean_tweet'][df['label'] == 1])
+
+print('hashtags from non-racist/sexist tweets')
 print(ht_positive[:5])
-
-
 
 # unnest list
 ht_positive = sum(ht_positive, [])
 ht_negative = sum(ht_negative, [])
 
+print('Filtering and clearing for better visualization and processing')
 print(ht_positive[:5])
 
 freq = nltk.FreqDist(ht_positive)
 d = pd.DataFrame({'Hashtag': list(freq.keys()),
                   'Count': list(freq.values())})
+print('List positive hashtags with count')
 print(df.head())
-
 
 # select top 10 hashtags
 d = d.nlargest(columns='Count', n=10)
@@ -135,8 +136,8 @@ plt.show()
 freq = nltk.FreqDist(ht_negative)
 d = pd.DataFrame({'Hashtag': list(freq.keys()),
                   'Count': list(freq.values())})
+print('List negative hashtags with count')
 print(df.head())
-
 
 # select top 10 hashtags
 d = d.nlargest(columns='Count', n=10)
@@ -163,17 +164,23 @@ model.fit(x_train, y_train)
 
 # testing
 pred = model.predict(x_test)
-f1_score(y_test, pred)
-print(f1_score)
 
+print('f1_score testing')
+print(f1_score(y_test, pred))
+
+print('accuracy_score testing')
 print(accuracy_score(y_test, pred))
+
 # use probability to get output
 pred_prob = model.predict_proba(x_test)
 pred = pred_prob[:, 1] >= 0.3
 pred = pred.astype(int)
 
-f1_score(y_test, pred)
+print('f1_score probability')
+print(f1_score(y_test, pred))
 
-accuracy_score(y_test, pred)
+print('accuracy_score probability')
+print(accuracy_score(y_test, pred))
 
+print('predict probability:')
 print(pred_prob[0][1] >= 0.3)
