@@ -42,7 +42,6 @@ for _, row in df.iterrows():
 for username, community in communities.items():
     print(f"Community for {username}: {', '.join(community)}")
 
-print("aaaa")
 # remove twitter handles (@user)
 df['clean_tweet'] = np.vectorize(remove_pattern)(df['tweet'], "@[\w]*")
 # print('remove twitter handles')
