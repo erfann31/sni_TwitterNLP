@@ -46,30 +46,38 @@ df['clean_tweet'] = df['clean_tweet'].str.replace("[^a-zA-Z#]", " ")
 print('remove special characters, numbers and punctuations')
 print(df.head())
 
+# Count the number of tweets for each username (node)
 tweets_count = df['username'].value_counts()
 
 # Count the number of mentions for each username (node)
-mentions_count = df['tweet'].apply(lambda x: len([mention for mention in x.split() if mention.startswith('@')]))
+mention_counts = Counter()
+for tweet in df['tweet']:
+    mentions = [mention.strip('@') for mention in tweet.split() if mention.startswith('@')]
+    mention_counts.update(mentions)
 
-# Identify the top 5 nodes for each criterion
-top_5_tweets_nodes = tweets_count.head(5)
-top_5_mentions_nodes = mentions_count.idxmax()
+# Identify the top 15 nodes for each criterion
+top_15_tweets_nodes = tweets_count.head(15)
+top_15_mentions_nodes = [(username, count) for username, count in mention_counts.most_common() if username]
 
-# Print the top 5 nodes and their corresponding counts for tweets
-print("\nTop 5 Nodes for Number of Tweets:")
-print(top_5_tweets_nodes)
+# Print the top 15 nodes and their corresponding counts for tweets
+print("\nTop 15 Nodes for Number of Tweets:")
+for i, (username, count) in enumerate(top_15_tweets_nodes.items(), start=1):
+    print(f"{i}- Node: {username}, Tweets: {count}")
+
+# Add a line break
+print("\n")
+
 mention_counts = Counter()
 for tweet in df['tweet']:
     mentions = [mention.strip('@') for mention in tweet.split() if mention.startswith('@')]
     mention_counts.update(mentions)
 
 # Identify the top 5 mentioned nodes excluding empty string
-top_5_mentions_nodes = [(username, count) for username, count in mention_counts.most_common() if username]
-
+top_15_mentions_nodes = [(username, count) for username, count in mention_counts.most_common() if username]
 # Print the top 5 mentioned nodes and their corresponding counts
-print("\nTop 5 Nodes for Number of Mentions:")
-for username, count in top_5_mentions_nodes[:5]:
-    print(f"Node: {username}, Mentions: {count}")
+print("\nTop 15 Nodes for Number of Mentions:")
+for i, (username, count) in enumerate(top_15_mentions_nodes[:15], start=1):
+    print(f"{i}- Node: {username}, Mentions: {count}")
 
 # remove short words
 df['clean_tweet'] = df['clean_tweet'].apply(lambda x: " ".join([w for w in x.split() if len(w) > 3]))
