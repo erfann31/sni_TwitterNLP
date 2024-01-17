@@ -20,6 +20,29 @@ def remove_pattern(input_txt, pattern):
     return input_txt
 
 df = pd.read_csv('Twitter Sentiments.csv')
+# Extract usernames from tweet text
+df['mentioned_users'] = df['tweet'].str.findall(r'@(\w+)')
+
+# Create a dictionary to store the communities
+communities = {}
+
+# Iterate over each row in the dataframe
+for _, row in df.iterrows():
+    username = row['username']
+
+    # Add the username to its own community if not already present
+    if username not in communities:
+        communities[username] = set()
+
+    # Add mentioned users to the same community as the username
+    for mentioned_user in row['mentioned_users']:
+        communities[username].add(mentioned_user)
+
+# Display the active communities
+for username, community in communities.items():
+    print(f"Community for {username}: {', '.join(community)}")
+
+print("aaaa")
 # remove twitter handles (@user)
 df['clean_tweet'] = np.vectorize(remove_pattern)(df['tweet'], "@[\w]*")
 # print('remove twitter handles')
