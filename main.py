@@ -1,5 +1,6 @@
 import re  # library for regular expression operations
 import string  # for string operations
+from collections import Counter
 
 import nltk  # Python library for NLP
 import numpy as np
@@ -9,6 +10,8 @@ from nltk.corpus import stopwords  # module for stop words that come with NLTK
 from nltk.corpus import twitter_samples
 from nltk.stem import PorterStemmer  # module for stemming
 from nltk.tokenize import TweetTokenizer
+from wordcloud import WordCloud
+
 
 def remove_pattern(input_txt, pattern):
     r = re.findall(pattern, input_txt)
@@ -19,17 +22,58 @@ def remove_pattern(input_txt, pattern):
 df = pd.read_csv('Twitter Sentiments.csv')
 # remove twitter handles (@user)
 df['clean_tweet'] = np.vectorize(remove_pattern)(df['tweet'], "@[\w]*")
-print('remove twitter handles')
-print(df.head())
+# print('remove twitter handles')
+# print(df.head())
+# Display basic information about the DataFrame
+print("DataFrame Information:")
+print(df.info())
 
+# Add a line break
+print("\n")
+
+# Display summary statistics of numeric columns
+print("Summary Statistics of Numeric Columns:")
+print(df.describe())
+
+# Add a line break
+print("\n")
+
+# Display the first few rows of the DataFrame
+print("First Few Rows of the DataFrame:")
+print(df.head())
 # remove special characters, numbers and punctuations
 df['clean_tweet'] = df['clean_tweet'].str.replace("[^a-zA-Z#]", " ")
 print('remove special characters, numbers and punctuations')
 print(df.head())
 
+tweets_count = df['username'].value_counts()
+
+# Count the number of mentions for each username (node)
+mentions_count = df['tweet'].apply(lambda x: len([mention for mention in x.split() if mention.startswith('@')]))
+
+# Identify the top 5 nodes for each criterion
+top_5_tweets_nodes = tweets_count.head(5)
+top_5_mentions_nodes = mentions_count.idxmax()
+
+# Print the top 5 nodes and their corresponding counts for tweets
+print("\nTop 5 Nodes for Number of Tweets:")
+print(top_5_tweets_nodes)
+mention_counts = Counter()
+for tweet in df['tweet']:
+    mentions = [mention.strip('@') for mention in tweet.split() if mention.startswith('@')]
+    mention_counts.update(mentions)
+
+# Identify the top 5 mentioned nodes excluding empty string
+top_5_mentions_nodes = [(username, count) for username, count in mention_counts.most_common() if username]
+
+# Print the top 5 mentioned nodes and their corresponding counts
+print("\nTop 5 Nodes for Number of Mentions:")
+for username, count in top_5_mentions_nodes[:5]:
+    print(f"Node: {username}, Mentions: {count}")
+
 # remove short words
 df['clean_tweet'] = df['clean_tweet'].apply(lambda x: " ".join([w for w in x.split() if len(w) > 3]))
-print('remove short words')
+print('\nremove short words')
 print(df.head())
 
 # individual words considered as tokens
@@ -37,7 +81,6 @@ tokenized_tweet = df['clean_tweet'].apply(lambda x: x.split())
 print('individual words considered as tokens')
 print(tokenized_tweet.head())
 # stem the words
-from nltk.stem.porter import PorterStemmer
 
 stemmer = PorterStemmer()
 
@@ -56,7 +99,6 @@ print(df.head())
 # visualize the frequent words
 all_words = " ".join([sentence for sentence in df['clean_tweet']])
 
-from wordcloud import WordCloud
 
 wordcloud = WordCloud(width=800, height=500, random_state=42, max_font_size=100).generate(all_words)
 
