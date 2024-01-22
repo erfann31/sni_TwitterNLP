@@ -10,6 +10,7 @@ from nltk.corpus import stopwords  # module for stop words that come with NLTK
 from nltk.corpus import twitter_samples
 from nltk.stem import PorterStemmer  # module for stemming
 from nltk.tokenize import TweetTokenizer
+from nltk.tokenize import word_tokenize
 from wordcloud import WordCloud
 
 
@@ -20,51 +21,57 @@ def remove_pattern(input_txt, pattern):
     return input_txt
 
 df = pd.read_csv('Twitter Sentiments.csv')
-# Extract usernames from tweet text
-df['mentioned_users'] = df['tweet'].str.findall(r'@(\w+)')
 
-# Create a dictionary to store the communities
-communities = {}
-
-# Iterate over each row in the dataframe
-for _, row in df.iterrows():
-    username = row['username']
-
-    # Add the username to its own community if not already present
-    if username not in communities:
-        communities[username] = set()
-
-    # Add mentioned users to the same community as the username
-    for mentioned_user in row['mentioned_users']:
-        communities[username].add(mentioned_user)
-
-# Display the active communities
-for username, community in communities.items():
-    print(f"Community for {username}: {', '.join(community)}")
-
-# remove twitter handles (@user)
-df['clean_tweet'] = np.vectorize(remove_pattern)(df['tweet'], "@[\w]*")
-# print('remove twitter handles')
-# print(df.head())
-# Display basic information about the DataFrame
 print("DataFrame Information:")
 print(df.info())
+print('--------------------------------------------')
+# Extract real usernames from the last column
+real_usernames = df['username'].unique()
 
-# Add a line break
-print("\n")
 
+# Define a function to count the number of mentions in a tweet
+def count_mentions(tweet):
+    # Define a regular expression to match mentions in tweets
+    mention_pattern = re.compile(r'@(\w+)')
+
+    # Find all mentions in the tweet
+    mentions = re.findall(mention_pattern, tweet)
+
+    # Return the count of mentions
+    return len(mentions)
+
+
+# Output the number of unique users in the last column
+print(f"Number of unique users in the last column: {len(real_usernames)}")
+
+# Output the total number of mentions after replacing '@user' with real usernames
+df['mention_count'] = df['tweet'].apply(count_mentions)
+
+# Get the total number of mentions across all tweets
+total_mentions = df['mention_count'].sum()
+
+# Output the result
+print(f"Total number of mentions in the dataset: {total_mentions}")
+# remove twitter handles (@user)
+df['clean_tweet'] = np.vectorize(remove_pattern)(df['tweet'], "@[\w]*")
+print('--------------------------------------------')
+print('remove twitter handles')
+print(df.head())
+# Display basic information about the DataFrame
+print('--------------------------------------------')
 # Display summary statistics of numeric columns
 print("Summary Statistics of Numeric Columns:")
 print(df.describe())
 
 # Add a line break
-print("\n")
+print('--------------------------------------------')
 
 # Display the first few rows of the DataFrame
 print("First Few Rows of the DataFrame:")
 print(df.head())
 # remove special characters, numbers and punctuations
 df['clean_tweet'] = df['clean_tweet'].str.replace("[^a-zA-Z#]", " ")
+print('--------------------------------------------')
 print('remove special characters, numbers and punctuations')
 print(df.head())
 
@@ -80,14 +87,15 @@ for tweet in df['tweet']:
 # Identify the top 15 nodes for each criterion
 top_15_tweets_nodes = tweets_count.head(15)
 top_15_mentions_nodes = [(username, count) for username, count in mention_counts.most_common() if username]
+print('--------------------------------------------')
 
 # Print the top 15 nodes and their corresponding counts for tweets
-print("\nTop 15 Nodes for Number of Tweets:")
+print("Top 15 Nodes for Number of Tweets:")
 for i, (username, count) in enumerate(top_15_tweets_nodes.items(), start=1):
     print(f"{i}- Node: {username}, Tweets: {count}")
 
 # Add a line break
-print("\n")
+print('--------------------------------------------')
 
 mention_counts = Counter()
 for tweet in df['tweet']:
@@ -97,17 +105,19 @@ for tweet in df['tweet']:
 # Identify the top 5 mentioned nodes excluding empty string
 top_15_mentions_nodes = [(username, count) for username, count in mention_counts.most_common() if username]
 # Print the top 5 mentioned nodes and their corresponding counts
-print("\nTop 15 Nodes for Number of Mentions:")
+print("Top 15 Nodes for Number of Mentions:")
 for i, (username, count) in enumerate(top_15_mentions_nodes[:15], start=1):
     print(f"{i}- Node: {username}, Mentions: {count}")
 
 # remove short words
 df['clean_tweet'] = df['clean_tweet'].apply(lambda x: " ".join([w for w in x.split() if len(w) > 3]))
-print('\nremove short words')
+print('--------------------------------------------')
+print('remove short words')
 print(df.head())
 
 # individual words considered as tokens
 tokenized_tweet = df['clean_tweet'].apply(lambda x: x.split())
+print('--------------------------------------------')
 print('individual words considered as tokens')
 print(tokenized_tweet.head())
 # stem the words
@@ -115,6 +125,7 @@ print(tokenized_tweet.head())
 stemmer = PorterStemmer()
 
 tokenized_tweet = tokenized_tweet.apply(lambda sentence: [stemmer.stem(word) for word in sentence])
+print('--------------------------------------------')
 print('stem words')
 print(tokenized_tweet.head())
 
@@ -123,12 +134,43 @@ for i in range(len(tokenized_tweet)):
     tokenized_tweet[i] = " ".join(tokenized_tweet[i])
 
 df['clean_tweet'] = tokenized_tweet
+print('--------------------------------------------')
 print('combine words into single sentence')
 print(df.head())
+print('--------------------------------------------')
+# Download the "punkt" resource
+nltk.download('punkt')
+
+
+def get_keywords(tweet):
+    # Tokenize the tweet
+    tokens = word_tokenize(tweet.lower())
+
+    # Remove stop words
+    stop_words = set(stopwords.words('english'))
+    filtered_tokens = [word for word in tokens if word.isalnum() and word not in stop_words]
+
+    return filtered_tokens
+
+
+df['keywords'] = df['tweet'].apply(get_keywords)
+
+# Flatten the list of keywords and count their occurrences
+all_keywords = [keyword for keywords in df['keywords'] for keyword in keywords]
+keyword_counts = Counter(all_keywords)
+
+# Get the 25 most common keywords
+most_common_keywords = keyword_counts.most_common(25)
+print('--------------------------------------------')
+# Output the result
+print("25 most used keywords in the dataset:")
+for keyword, count in most_common_keywords:
+    print(f"{keyword}: {count}")
+
+# --------------------------------------------
 
 # visualize the frequent words
 all_words = " ".join([sentence for sentence in df['clean_tweet']])
-
 
 wordcloud = WordCloud(width=800, height=500, random_state=42, max_font_size=100).generate(all_words)
 
@@ -246,8 +288,10 @@ print(f'len(freqs) = {len(freqs)}')
 
 keys = ['happi', 'merri', 'nice', 'good', 'bad', 'sad', 'mad', 'best', 'pretti',
         '❤', ':)', ':(', '😒', '😬', '😄', '😍', '♛',
-        'song', 'idea', 'power', 'play', 'magnific']
-
+        'song', 'idea', 'power', 'play', 'magnific', 'hate', 'never', 'fuck', 'disgust', 'unfair']
+for keyword,count in most_common_keywords:
+    keys.append(keyword)
+print("keyskeyskeyskeyskeyskeyskeyskeyskeyskeys",keys)
 # each element consist of a sublist with this pattern: [<word>, <positive_count>, <negative_count>]
 data = []
 
@@ -268,9 +312,10 @@ for word in keys:
 
     # append the word counts to the table
     data.append([word, pos, neg])
-
+print('--------------------------------------------')
+print('Word analysis: [word, positive frequency, negative frequency]')
 print(data)
-
+print('--------------------------------------------')
 fig, ax = plt.subplots(figsize=(8, 8))
 
 # convert positive raw counts to logarithmic scale. we add 1 to avoid log(0)
@@ -294,18 +339,21 @@ ax.plot([0, 9], [0, 9], color='red')  # Plot the red line that divides the 2 are
 plt.show()
 
 freqs = build_freqs(train_x, train_y)
+print('--------------------------------------------')
 
 # check the output
 print("type(freqs) = " + str(type(freqs)))
 print("len(freqs) = " + str(len(freqs.keys())))
+print('--------------------------------------------')
 
 print('This is an example of a positive tweet: \n', train_x[0])
-print('\nThis is an example of the processed version of the tweet: \n', process_tweet(train_x[0]))
+print('--------------------------------------------')
+print('This is an example of the processed version of the tweet: \n', process_tweet(train_x[0]))
+print('--------------------------------------------')
 
 
 def sigmoid(z):
     h = 1 / (1 + np.exp(-z))
-
     return h
 
 
@@ -361,14 +409,8 @@ for i in range(len(train_x)):
 # training labels corresponding to X
 Y = train_y
 
-print(X.shape)
-print(Y.shape)
 # Apply gradient descent
 J, theta = gradientDescent(X, Y, np.zeros((3, 1)), 1e-9, 1500)
-
-print(f"The cost after training is {J:.6f}.")
-print(f"The resulting vector of weights is {[round(t, 8) for t in np.squeeze(theta)]}")
-
 
 def neg(theta, pos):
     return (-theta[0] - pos * theta[1]) / theta[2]
@@ -392,58 +434,31 @@ ax.plot([0, maxpos], [neg(theta, 0), neg(theta, maxpos)], color='gray')
 
 plt.show()
 
+# Extract usernames from tweet text
+df['mentioned_users'] = df['tweet'].str.findall(r'@(\w+)')
 
-def predict_tweet(tweet, freqs, theta):
-    # extract the features of the tweet and store it into x
-    x = extract_features(tweet, freqs)
+# Create a dictionary to store the communities
+communities = {}
 
-    # make the prediction using x and theta
-    y_pred = sigmoid(np.dot(x, theta))
+# Iterate over each row in the dataframe
+for _, row in df.iterrows():
+    username = row['username']
 
-    return y_pred
+    # Add the username to its own community if not already present
+    if username not in communities:
+        communities[username] = set()
 
+    # Add mentioned users to the same community as the username
+    for mentioned_user in row['mentioned_users']:
+        communities[username].add(mentioned_user)
 
-# check your own sentiment
-my_tweet = 'I love machine learning :)'
-y_pred_temp = predict_tweet(my_tweet, freqs, theta)
-print(y_pred_temp)
+# Count the size of each community
+community_sizes = {username: len(community) for username, community in communities.items()}
 
-if y_pred_temp > 0.5:
-    print('Positive sentiment')
-else:
-    print('Negative sentiment')
+# Sort communities by size in descending order
+sorted_communities = sorted(community_sizes.items(), key=lambda x: x[1], reverse=True)
 
-
-def test_logistic_regression(test_x, test_y, freqs, theta):
-    """
-    test_x: a list of tweets
-    test_y: (m, 1) vector with the corresponding labels for the list of tweets
-    """
-
-    y_hat = []
-
-    for tweet in test_x:
-        # get the label prediction for the tweet
-        y_pred = predict_tweet(tweet, freqs, theta)
-
-        if y_pred > 0.5:
-            y_hat.append(1.0)
-        else:
-            y_hat.append(0.0)
-
-    accuracy = np.sum(np.squeeze(test_y) == np.squeeze(np.asarray(y_hat))) / len(test_y)
-
-    return accuracy
-
-
-test_accuracy = test_logistic_regression(test_x, test_y, freqs, theta)
-print(f"Logistic regression model's accuracy = {test_accuracy:.4f}")
-
-print('Label Predicted Tweet')
-for x, y in zip(test_x, test_y):
-    y_hat = predict_tweet(x, freqs, theta)
-
-    if np.abs(y - (y_hat > 0.5)) > 0:
-        print('THE TWEET IS:', x)
-        print('THE PROCESSED TWEET IS:', process_tweet(x))
-        print('%d\t%0.8f\t%s' % (y, y_hat, ' '.join(process_tweet(x)).encode('ascii', 'ignore')))
+# Display the top 5 communities
+print('Top 10 communities with the most users:')
+for i, (username, community_size) in enumerate(sorted_communities[:10], 1):
+    print(f"{i}. Community for {username}: {', '.join(communities[username])} (Size: {community_size})")
