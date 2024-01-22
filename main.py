@@ -20,6 +20,7 @@ def remove_pattern(input_txt, pattern):
         input_txt = re.sub(word, "", input_txt)
     return input_txt
 
+
 df = pd.read_csv('Twitter Sentiments.csv')
 
 print("DataFrame Information:")
@@ -202,7 +203,6 @@ plt.imshow(wordcloud, interpolation='bilinear')
 plt.axis('off')
 plt.show()
 
-
 nltk.download('twitter_samples')
 nltk.download('stopwords')
 all_positive_tweets = twitter_samples.strings('positive_tweets.json')
@@ -289,9 +289,9 @@ print(f'len(freqs) = {len(freqs)}')
 keys = ['happi', 'merri', 'nice', 'good', 'bad', 'sad', 'mad', 'best', 'pretti',
         '❤', ':)', ':(', '😒', '😬', '😄', '😍', '♛',
         'song', 'idea', 'power', 'play', 'magnific', 'hate', 'never', 'fuck', 'disgust', 'unfair']
-for keyword,count in most_common_keywords:
+for keyword, count in most_common_keywords:
     keys.append(keyword)
-print("keyskeyskeyskeyskeyskeyskeyskeyskeyskeys",keys)
+print("keyskeyskeyskeyskeyskeyskeyskeyskeyskeys", keys)
 # each element consist of a sublist with this pattern: [<word>, <positive_count>, <negative_count>]
 data = []
 
