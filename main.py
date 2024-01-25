@@ -458,7 +458,7 @@ community_sizes = {username: len(community) for username, community in communiti
 # Sort communities by size in descending order
 sorted_communities = sorted(community_sizes.items(), key=lambda x: x[1], reverse=True)
 
-# Display the top 5 communities
+# Display the top 10 communities
 print('Top 10 communities with the most users:')
 for i, (username, community_size) in enumerate(sorted_communities[:10], 1):
     print(f"{i}. Community for {username}: {', '.join(communities[username])} (Size: {community_size})")
